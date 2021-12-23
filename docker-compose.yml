@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  postgresdb:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_PASSWORD=prokopev
+    volumes:
+      - ./postgres/postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+    - "5432:5432"
+
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/stocks_products
+    depends_on:
+      - postgresdb
+    ports:
+      - "8000:8000"
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - web
+      - postgresdb
+    ports:
+      - "10080:80"
+    volumes:
+      - ./static/:/static
